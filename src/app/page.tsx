@@ -9,6 +9,9 @@ export default function Home() {
   >([]);
   const [loading, setLoading] = useState(true);
   const [sortField, setSortField] = useState<string>("title");
+  const [playlist, setPlaylist] = useState<
+    { title: string; album: string; artist: string; song_length: string }[]
+  >([]);
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -47,6 +50,26 @@ export default function Home() {
     setSongs(sorted);
   };
 
+  const handleSongClick = (song: {
+    title: string;
+    album: string;
+    artist: string;
+    song_length: string;
+  }) => {
+    setPlaylist((prevPlaylist) => {
+      const isAlreadySelected = prevPlaylist.some(
+        (selectedSong) => selectedSong.title === song.title
+      );
+      if (isAlreadySelected) {
+        return prevPlaylist.filter(
+          (selectedSong) => selectedSong.title !== song.title
+        );
+      } else {
+        return [...prevPlaylist, song];
+      }
+    });
+  };
+
   return (
     <div className="items-center justify-items-center flex flex-col">
       {loading ? (
@@ -81,7 +104,21 @@ export default function Home() {
               Sort Descending
             </button>
           </div>
-          <SongTable songs={songs} />
+          <SongTable songs={songs} onSongClick={handleSongClick} />
+          <div className="mt-4">
+            <h3 className="text-lg font-bold">Your Groovy Playlist:</h3>
+            {playlist.length > 0 ? (
+              <ul>
+                {playlist.map((song, index) => (
+                  <li key={index}>
+                    {song.title} - {song.artist}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No songs selected yet.</p>
+            )}
+          </div>
         </div>
       )}
     </div>

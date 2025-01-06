@@ -1,5 +1,4 @@
 import React from "react";
-
 import {
   Table,
   TableHeader,
@@ -18,9 +17,10 @@ interface Song {
 
 interface SongTableProps {
   songs: Song[];
+  onSongClick: (song: Song) => void;
 }
 
-const SongTable: React.FC<SongTableProps> = ({ songs }) => {
+const SongTable: React.FC<SongTableProps> = ({ songs, onSongClick }) => {
   return (
     <Table aria-label="table">
       <TableHeader>
@@ -31,7 +31,11 @@ const SongTable: React.FC<SongTableProps> = ({ songs }) => {
       </TableHeader>
       <TableBody emptyContent={"No rows to display."}>
         {songs.map((song, index) => (
-          <TableRow key={index}>
+          <TableRow
+            key={index}
+            onClick={() => onSongClick(song)}
+            className="cursor-pointer hover:bg-gray-100"
+          >
             <TableCell>{song.title}</TableCell>
             <TableCell>{song.album}</TableCell>
             <TableCell>{song.artist}</TableCell>
