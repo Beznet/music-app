@@ -80,7 +80,7 @@ export default function Home() {
             handleSort={handleSort}
           />
           <SongTable
-            songs={filteredSongs} // Use memoized filtered songs
+            songs={filteredSongs}
             playlist={playlist}
             onSongClick={handleSongClick}
           />

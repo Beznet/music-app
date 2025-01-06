@@ -31,3 +31,5 @@ I would have liked to include Unit tests on my components to make sure the outpu
 I also would have liked to add sorting directly on the table itself by column clicks but the library was proving a bit more difficult to work with, so I opted to create a simple dropdown solution instead to complete the MVP.
 
 More styling and mobile friendly optimizations would have also been preferred for users on smaller devices.
+
+I added a utility folder in order to make optimizations to the seconds and convert them to a more readable time format but did not have time to do this, it was a lesser priority for the MVP.
