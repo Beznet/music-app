@@ -29,16 +29,19 @@ export default function Home() {
     fetchSongs();
   }, []);
 
-  const handleSort = () => {
+  const handleSort = (order: "asc" | "desc") => {
     const sorted = [...songs].sort((a, b) => {
       const valueA = a[sortField as keyof typeof a];
       const valueB = b[sortField as keyof typeof b];
 
       if (!isNaN(Number(valueA)) && !isNaN(Number(valueB))) {
-        return Number(valueA) - Number(valueB);
+        return order === "asc"
+          ? Number(valueA) - Number(valueB)
+          : Number(valueB) - Number(valueA);
       }
-
-      return valueA.localeCompare(valueB);
+      return order === "asc"
+        ? valueA.localeCompare(valueB)
+        : valueB.localeCompare(valueA);
     });
 
     setSongs(sorted);
@@ -66,10 +69,16 @@ export default function Home() {
               <option value="song_length">Song Length</option>
             </select>
             <button
-              onClick={handleSort}
-              className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={() => handleSort("asc")}
+              className="p-2 bg-blue-500 text-white rounded"
             >
-              Sort
+              Sort Ascending
+            </button>
+            <button
+              onClick={() => handleSort("desc")}
+              className="p-2 bg-red-500 text-white rounded"
+            >
+              Sort Descending
             </button>
           </div>
           <SongTable songs={songs} />
