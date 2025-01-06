@@ -17,10 +17,18 @@ interface Song {
 
 interface SongTableProps {
   songs: Song[];
+  playlist: Song[];
   onSongClick: (song: Song) => void;
 }
 
-const SongTable: React.FC<SongTableProps> = ({ songs, onSongClick }) => {
+const SongTable: React.FC<SongTableProps> = ({
+  songs,
+  playlist,
+  onSongClick,
+}) => {
+  const isSelected = (song: Song) =>
+    playlist.some((selectedSong) => selectedSong.title === song.title);
+
   return (
     <Table aria-label="table">
       <TableHeader>
@@ -34,7 +42,9 @@ const SongTable: React.FC<SongTableProps> = ({ songs, onSongClick }) => {
           <TableRow
             key={index}
             onClick={() => onSongClick(song)}
-            className="cursor-pointer hover:bg-gray-100"
+            className={`cursor-pointer ${
+              isSelected(song) ? "bg-blue-100" : ""
+            } hover:bg-gray-100`}
           >
             <TableCell>{song.title}</TableCell>
             <TableCell>{song.album}</TableCell>

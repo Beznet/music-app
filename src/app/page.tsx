@@ -1,36 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useSongs } from "./hooks/useSongs";
 import SongTable from "./ui/SongTable";
+import SortControls from "./ui/Sort";
+import Playlist from "./ui/Playlist";
 
 export default function Home() {
-  const [songs, setSongs] = useState<
-    { title: string; album: string; artist: string; song_length: string }[]
-  >([]);
-  const [loading, setLoading] = useState(true);
+  const { songs, loading, setSongs } = useSongs();
   const [sortField, setSortField] = useState<string>("title");
   const [playlist, setPlaylist] = useState<
     { title: string; album: string; artist: string; song_length: string }[]
   >([]);
-
-  useEffect(() => {
-    const fetchSongs = async () => {
-      try {
-        const response = await fetch("/api/songs");
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
-        const data = await response.json();
-
-        setSongs(data);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSongs();
-  }, []);
 
   const handleSort = (order: "asc" | "desc") => {
     const sorted = [...songs].sort((a, b) => {
@@ -60,13 +41,20 @@ export default function Home() {
       const isAlreadySelected = prevPlaylist.some(
         (selectedSong) => selectedSong.title === song.title
       );
-      if (isAlreadySelected) {
-        return prevPlaylist.filter(
-          (selectedSong) => selectedSong.title !== song.title
-        );
-      } else {
-        return [...prevPlaylist, song];
+      return isAlreadySelected
+        ? prevPlaylist.filter((s) => s.title !== song.title)
+        : [...prevPlaylist, song];
+    });
+  };
+
+  const shufflePlaylist = () => {
+    setPlaylist((prevPlaylist) => {
+      const shuffled = [...prevPlaylist];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
+      return shuffled;
     });
   };
 
@@ -76,49 +64,17 @@ export default function Home() {
         <div>Loading Your Music...</div>
       ) : (
         <div>
-          <div className="flex items-center gap-4 mb-4">
-            <label htmlFor="sortField" className="text-lg">
-              Sort by:
-            </label>
-            <select
-              id="sortField"
-              value={sortField}
-              onChange={(e) => setSortField(e.target.value)}
-              className="p-2 border border-gray-300 rounded"
-            >
-              <option value="title">Title</option>
-              <option value="album">Album</option>
-              <option value="artist">Artist</option>
-              <option value="song_length">Song Length</option>
-            </select>
-            <button
-              onClick={() => handleSort("asc")}
-              className="p-2 bg-blue-500 text-white rounded"
-            >
-              Sort Ascending
-            </button>
-            <button
-              onClick={() => handleSort("desc")}
-              className="p-2 bg-red-500 text-white rounded"
-            >
-              Sort Descending
-            </button>
-          </div>
-          <SongTable songs={songs} onSongClick={handleSongClick} />
-          <div className="mt-4">
-            <h3 className="text-lg font-bold">Your Groovy Playlist:</h3>
-            {playlist.length > 0 ? (
-              <ul>
-                {playlist.map((song, index) => (
-                  <li key={index}>
-                    {song.title} - {song.artist}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No songs selected yet.</p>
-            )}
-          </div>
+          <SortControls
+            sortField={sortField}
+            setSortField={setSortField}
+            handleSort={handleSort}
+          />
+          <SongTable
+            songs={songs}
+            playlist={playlist}
+            onSongClick={handleSongClick}
+          />
+          <Playlist playlist={playlist} shufflePlaylist={shufflePlaylist} />
         </div>
       )}
     </div>
