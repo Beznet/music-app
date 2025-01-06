@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useSongs } from "./hooks/useSongs";
 import SongTable from "./ui/SongTable";
 import SortControls from "./ui/Sort";
@@ -13,41 +13,47 @@ export default function Home() {
     { title: string; album: string; artist: string; song_length: string }[]
   >([]);
 
-  const handleSort = (order: "asc" | "desc") => {
-    const sorted = [...songs].sort((a, b) => {
-      const valueA = a[sortField as keyof typeof a];
-      const valueB = b[sortField as keyof typeof b];
+  const handleSort = useCallback(
+    (order: "asc" | "desc") => {
+      const sorted = [...songs].sort((a, b) => {
+        const valueA = a[sortField as keyof typeof a];
+        const valueB = b[sortField as keyof typeof b];
 
-      if (!isNaN(Number(valueA)) && !isNaN(Number(valueB))) {
+        if (!isNaN(Number(valueA)) && !isNaN(Number(valueB))) {
+          return order === "asc"
+            ? Number(valueA) - Number(valueB)
+            : Number(valueB) - Number(valueA);
+        }
         return order === "asc"
-          ? Number(valueA) - Number(valueB)
-          : Number(valueB) - Number(valueA);
-      }
-      return order === "asc"
-        ? valueA.localeCompare(valueB)
-        : valueB.localeCompare(valueA);
-    });
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      });
 
-    setSongs(sorted);
-  };
+      setSongs(sorted);
+    },
+    [songs, sortField, setSongs]
+  );
 
-  const handleSongClick = (song: {
-    title: string;
-    album: string;
-    artist: string;
-    song_length: string;
-  }) => {
-    setPlaylist((prevPlaylist) => {
-      const isAlreadySelected = prevPlaylist.some(
-        (selectedSong) => selectedSong.title === song.title
-      );
-      return isAlreadySelected
-        ? prevPlaylist.filter((s) => s.title !== song.title)
-        : [...prevPlaylist, song];
-    });
-  };
+  const handleSongClick = useCallback(
+    (song: {
+      title: string;
+      album: string;
+      artist: string;
+      song_length: string;
+    }) => {
+      setPlaylist((prevPlaylist) => {
+        const isAlreadySelected = prevPlaylist.some(
+          (selectedSong) => selectedSong.title === song.title
+        );
+        return isAlreadySelected
+          ? prevPlaylist.filter((s) => s.title !== song.title)
+          : [...prevPlaylist, song];
+      });
+    },
+    [setPlaylist]
+  );
 
-  const shufflePlaylist = () => {
+  const shufflePlaylist = useCallback(() => {
     setPlaylist((prevPlaylist) => {
       const shuffled = [...prevPlaylist];
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -56,12 +62,16 @@ export default function Home() {
       }
       return shuffled;
     });
-  };
+  }, [setPlaylist]);
+
+  const filteredSongs = useMemo(() => {
+    return songs;
+  }, [songs]);
 
   return (
     <div className="items-center justify-items-center flex flex-col">
       {loading ? (
-        <div>Loading Your Music...</div>
+        <div>Loading Your Tunes...</div>
       ) : (
         <div>
           <SortControls
@@ -70,7 +80,7 @@ export default function Home() {
             handleSort={handleSort}
           />
           <SongTable
-            songs={songs}
+            songs={filteredSongs} // Use memoized filtered songs
             playlist={playlist}
             onSongClick={handleSongClick}
           />
